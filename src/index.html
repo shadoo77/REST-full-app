@@ -13,9 +13,17 @@
 
     <div id="myDIV" class="header">
         <h2 style="margin:5px">My To Do List</h2>
-        <input type="text" id="myInput" placeholder="Title...">
-        <span class="addBtn" id="addNewElement">Add</span>
+        <form action="/save_data" method="post">
+            <input type="text" id="myInput" placeholder="Title..." name="Task" />
+            <span class="addBtn" id="addNewElement" type="button">Add</span>
+        </form>
         <!-- onclick="newElement()"  -->
+    </div>
+    <!--
+my test here 
+    -->
+    <div id="root">
+       
     </div>
         
         <ul id="myUL">
@@ -27,5 +35,6 @@
             <li>Organize office</li>
         </ul>
     <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

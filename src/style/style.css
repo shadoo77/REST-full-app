@@ -3,6 +3,12 @@ body {
     min-width: 250px;
   }
   
+  #root {
+    background-color: aqua;
+  }
+  #root span {
+    display: block;
+  }
   /* Include the padding and border in an element's total width and height */
   * {
     box-sizing: border-box;
