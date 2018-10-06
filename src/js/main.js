@@ -37,44 +37,63 @@ const myInput = document.getElementById('myInput');
     return elem;
   }
 
-  async function retrieveData(url, reqType) {
+  async function main(homePage, saveData) {
+    const addNewElement = document.getElementById('addNewElement'); 
+    try {
+      const items = await fetchJSON(homePage, 'GET');
+      items.forEach((item, index) => {
+        if(item.Done == 0) {
+          createAndAppend('li', myUL, {html: item.Task, value: item.ID});
+        }else {
+          createAndAppend('li', myUL, {html: item.Task, value: item.ID, class: "checked"});
+        }
+      });
+      markAsX();
+      addNewElement.addEventListener('click', async () => {
+        const taskData = {id: null, task: myInput.value, done: true};
+      
+        postData(saveData, taskData, 'POST')
+          .then(taskData => JSON.stringify(taskData)) // JSON-string from `response.json()` call
+          .catch(error => console.error(error));
         try {
-            const data = await fetchJSON(url, reqType);
-            data.sort((a, b) => a.Task.localeCompare(b.Task, 'fr', {ignorePunctuation: true}));
-            data.forEach((item, index) => {
-            createAndAppend('li', myUL, {html: item.Task});
-            });
-            markAsX();
-            deleteItem();
+          const allItems = await fetchJSON(homePage, 'GET');
+          const maxId = allItems.reduce((prev, next) => prev.ID > next.ID ? prev.ID : next.ID);
+          newElement(maxId);
+          myInput.value = "";
+        } catch(err) { console.log(err) }
+      });
+
+      ////////////////// Delete item here ////////////////////
+      try {
+        const why = await fetchJSON(homePage, 'GET');
+        const closeClass = document.getElementsByClassName("close");
+        for(let i = 0; i < why.length; i++) {
+          closeClass[i].addEventListener('click', (event) => {
+            const elemId = event.target.parentNode.value;
+            const div = event.target.parentNode;
+            div.style.display = "none";
+            const data = {index: elemId};
+            postData(deleteData, data, 'DELETE')
+              .then(data => JSON.stringify(data)) // JSON-string from `response.json()` call
+              .catch(error => console.error(error));          
+          });
         }
-        catch(error) {
-        createAndAppend('div', root, { html: error.message, class: 'alert-error' });
-        }
+      }
+      catch(err) {
+        console.log(err);
+      }
+      
+      ////////////////////////////////////////////////////////
+    }
+    catch(error) {
+      createAndAppend('div', root, { html: error.message, class: 'alert-error' });
+    }
   }
 
-  function main(homePage, saveData) {
-    retrieveData(homePage, 'GET');
-    const addNewElement = document.getElementById('addNewElement');   
-    addNewElement.addEventListener('click', (event) => {
-        //newElement();
-        //////////////////////////////
-        myUL.innerHTML = "";
-        console.log('First one : ', myInput.value);
-        const data = {id: null, task: myInput.value, done: true};
-    
-        postData(saveData, data)
-        .then(data => console.log(JSON.stringify(data))) // JSON-string from `response.json()` call
-        .catch(error => console.error(error));
-        myInput.value = "";
-        retrieveData(homePage, 'GET');
-    });
-  }
-  
-
-function postData(url, data) {
+function postData(url, data, methodType) {
   // Default options are marked with *
     return fetch(url, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        method: methodType, // *GET, POST, PUT, DELETE, etc.
         mode: "cors", // no-cors, cors, *same-origin
         cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
         credentials: "same-origin", // include, same-origin, *omit
@@ -91,8 +110,8 @@ function postData(url, data) {
 
   const homePage = '/home';
   const saveData = '/save_data';
+  const deleteData = '/delete_data';
 
   window.onload = () => main(homePage, saveData);
-  //window.onload = () => console.log('hoiiii');
 
 }
